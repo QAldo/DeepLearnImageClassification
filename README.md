@@ -5,4 +5,4 @@ This is an image classification application using Python that uses a pre-trained
 
 # Installation
 To use the image classification application, you'll need to install the required dependencies. You can do this using pip:
-pip install -r requirements.txt
+- pip install -r requirements.txt
