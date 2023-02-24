@@ -1,0 +1,46 @@
+name: ImageClassification CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: false
+        tags: imageclassification:latest
+
+    - name: Test
+      run: |
+        docker run -v ${PWD}/tests:/app/tests imageclassification:latest python -m unittest discover -v
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and push Docker image
+      run: |
+        docker build -t imageclassification:latest .
+        docker tag imageclassification:latest ${{ secrets.DOCKER_USERNAME }}/imageclassification:latest
+        docker push ${{ secrets.DOCKER_USERNAME }}/imageclassification:latest
